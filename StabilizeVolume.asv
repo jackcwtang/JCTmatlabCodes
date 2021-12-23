@@ -13,12 +13,11 @@ ylabel('Z, pixels');
 mag_crop = data.mag(:,:,328:end);
 
 %%
-idx = 1;
-img1 = squeeze(mag_crop(:,idx,:))';
-img2 = squeeze(mag_crop(:,idx+1,:))';
+img1 = squeeze(mag_crop(:,idx,:));
+img2 = squeeze(mag_crop(:,idx+1,:));
 figure(2)
-imagesc(log10(img2));
-title('First Frame');
+imagesc(idx1);
+title('Time-averaged B-scan');
 xlabel('X, pixels');
 ylabel('Z, pixels');
     
