@@ -2,7 +2,7 @@
 %% Load data
 clc
 clear
-data = ProcessSpectralInterferogram(1280*2)
+data = ProcInterferenceBG(1280*2)
 %% Plot the time-averaged data
 time_avg = mean(data.mag,2);
 figure(1)
@@ -26,6 +26,7 @@ figure()
 imagesc(mask(:,:,5));
 mag_cm = mag_crop.*mask;
 %% 
+clear data time_avg mag_crop
 ref = mag_cm(:,:,1);
 fixed = zeros(2*size(raw_mag,1),2*size(raw_mag,2),size(raw_mag,3));
 offsets = zeros(size(mag_cm,3),2);
@@ -51,9 +52,9 @@ for i = 1:size(mag_cm,3) % calculate translation offsets and apply
     fixed(z_start-offsets(i,1):z_end-offsets(i,1),x_start-offsets(i,2):x_end-offsets(i,2),i)= raw_mag(:,:,i);
     
     % Set new reference every 10 frames
-    if rem(i,10)==0
-    ref = fixed(z_start+lower_lim:z_start+upper_lim,x_start:x_end,i);
-    end
+%     if rem(i,10)==0
+%     ref = fixed(z_start+lower_lim:z_start+upper_lim,x_start:x_end,i);
+%    end
 end
 %% Display initial and stabilized averages
 % Initial average
@@ -84,6 +85,7 @@ init_crop = exp(init(z_start+1:(z_start+size(raw_mag,1)),x_start+2:(x_start+size
 % fixed_crop_masked = fixed_mask.*fixed_crop;
 % init_crop_masked = init_mask.*init_crop;
 %% WriteMultiPageTif
+clearvars -except fixed_crop init_crop
 WriteMultiPageTif('fixed.tiff', fixed_crop, 8)
 WriteMultiPageTif('init.tiff', init_crop, 8)
 % %% saveastiff
