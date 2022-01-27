@@ -13,36 +13,50 @@ ylabel('Z, pixels');
 
 %% Crop magnitude for removing fixed pattern noise
 raw_mag = log10(permute(data.mag, [3 1 2])); %Now data is in (y,x,time)
-mag_crop = raw_mag(300:800,:,:);
+lower_lim = input('Input least pixel value to keep: ');
+upper_lim = input('Input greatest pixel value to keep: ');
+mag_crop = raw_mag(lower_lim:upper_lim,:,:);
 
 figure(2)
 imagesc(squeeze(mean(mag_crop,3)))
 [threshold, mask] = SetImageThreshold(squeeze(mean(mag_crop,3)));
-%% Fix images
+%% Threshold the cropped image to highlight only the important features
 mask = mag_crop>threshold;
 figure()
 imagesc(mask(:,:,5));
 mag_cm = mag_crop.*mask;
-%%
+%% 
 ref = mag_cm(:,:,1);
 fixed = zeros(2*size(raw_mag,1),2*size(raw_mag,2),size(raw_mag,3));
 offsets = zeros(size(mag_cm,3),2);
 init = fixed;
-z_start = floor(size(raw_mag,1)/2);
-x_start = floor(size(raw_mag,2)/2);
+z_start = ceil(size(raw_mag,1)/2)+1;
+x_start = ceil(size(raw_mag,2)/2)+1;
 init(z_start:(z_start+size(raw_mag,1)-1),x_start:(x_start+size(raw_mag,2)-1),:)= raw_mag(:,:,:);
 
 for i = 1:size(mag_cm,3) % calculate translation offsets and apply
+    
+    % Compute the offsets for peak cross correlation
     img = mag_cm(:,:,i);
     c = normxcorr2(ref,img);
     [zpeak,xpeak] = find(c==max(c(:)));
     offsets(i,1) = zpeak-size(mag_cm,1);
     offsets(i,2) = xpeak-size(mag_cm,2);
-    z_start = floor(size(raw_mag,1)/2)-offsets(i,1);
-    x_start = floor(size(raw_mag,2)/2)-offsets(i,2);
-    fixed(z_start:(z_start+size(raw_mag,1)-1),x_start:(x_start+size(raw_mag,2)-1),i)= raw_mag(:,:,i);
+    
+    % Translate the frame by the computed offsets
+%     z_start = ceil(size(raw_mag,1)/2);
+%     x_start = ceil(size(raw_mag,2)/2);
+    z_end = z_start + size(raw_mag,1)-1;
+    x_end = x_start + size(raw_mag,2)-1;
+    fixed(z_start-offsets(i,1):z_end-offsets(i,1),x_start-offsets(i,2):x_end-offsets(i,2),i)= raw_mag(:,:,i);
+    
+    % Set new reference every 10 frames
+    if rem(i,10)==0
+    ref = fixed(z_start+lower_lim:z_start+upper_lim,x_start:x_end,i);
+    end
 end
-%% Display initial average
+%% Display initial and stabilized averages
+% Initial average
 init_avg = mean(init,3);
 figure(4)
 imagesc(init_avg);
@@ -51,7 +65,7 @@ xlabel('X, pixels')
 ylabel('Z, pixels')
 caxis([2.5 5.25])
 
-%% Display fixed average
+% Stabilized average
 fixed_avg = mean(fixed,3);
 figure(5)
 imagesc(fixed_avg);
