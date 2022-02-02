@@ -2,9 +2,20 @@
 %% Load data
 clc
 clear
+%%
 data = ProcInterferenceBG(1280*2)
+%%
+nm2px = 4549.61; % pixel size in axial dimension
+lambda0 = 1679; % 1679 nm for Santec
+phasepx = 2*pi*nm2px/lambda0;
+t_dim = 2;
+fastscanfreq = 473.7;
+res_freq = 3445;
+res_period = 1/res_freq;
+flyback = res_period/2;
+dt = 1/fastscanfreq + flyback;
 %% Plot the time-averaged data
-time_avg = mean(data.mag,2);
+time_avg = mean(data.mag,t_dim);
 figure(1)
 imagesc(transpose(log(squeeze(time_avg(:,:,:)))));
 title('Time-averaged B-scan');
@@ -13,6 +24,7 @@ ylabel('Z, pixels');
 
 %% Crop magnitude for removing fixed pattern noise
 raw_mag = log10(permute(data.mag, [3 1 2])); %Now data is in (y,x,time)
+raw_phase = permute(unwrap(data.phase,[],t_dim), [3 1 2]);
 lower_lim = input('Input least pixel value to keep: ');
 upper_lim = input('Input greatest pixel value to keep: ');
 mag_crop = raw_mag(lower_lim:upper_lim,:,:);
@@ -26,9 +38,10 @@ figure()
 imagesc(mask(:,:,5));
 mag_cm = mag_crop.*mask;
 %% 
-clear data time_avg mag_crop
 ref = mag_cm(:,:,1);
 fixed = zeros(2*size(raw_mag,1),2*size(raw_mag,2),size(raw_mag,3));
+fixed_phase = zeros(2*size(raw_phase,1),2*size(raw_phase,2),size(raw_phase,3));
+
 offsets = zeros(size(mag_cm,3),2);
 init = fixed;
 z_start = ceil(size(raw_mag,1)/2)+1;
@@ -50,7 +63,7 @@ for i = 1:size(mag_cm,3) % calculate translation offsets and apply
     z_end = z_start + size(raw_mag,1)-1;
     x_end = x_start + size(raw_mag,2)-1;
     fixed(z_start-offsets(i,1):z_end-offsets(i,1),x_start-offsets(i,2):x_end-offsets(i,2),i)= raw_mag(:,:,i);
-    
+    fixed_phase(z_start-offsets(i,1):z_end-offsets(i,1),x_start-offsets(i,2):x_end-offsets(i,2),i)= raw_phase(:,:,i)+offsets(i,1)*phasepx;
     % Set new reference every 10 frames
 %     if rem(i,10)==0
 %     ref = fixed(z_start+lower_lim:z_start+upper_lim,x_start:x_end,i);
@@ -85,10 +98,21 @@ init_crop = exp(init(z_start+1:(z_start+size(raw_mag,1)),x_start+2:(x_start+size
 % fixed_crop_masked = fixed_mask.*fixed_crop;
 % init_crop_masked = init_mask.*init_crop;
 %% WriteMultiPageTif
-clearvars -except fixed_crop init_crop
 WriteMultiPageTif('fixed.tiff', fixed_crop, 8)
 WriteMultiPageTif('init.tiff', init_crop, 8)
 % %% saveastiff
 % options.compress = 'lzw';
 % saveastiff(fixed,'fixed_cp.tiff',options);
 % saveastiff(mag,'fixed_cp_nofix.tiff',options);
+
+%% Phase var of fixed image
+phase_var = var(fixed_phase,0,3);
+figure(6)
+imagesc(squeeze(phase_var))
+caxis([1.75e4 2e4])
+%% Doppler of fixed image
+t_dim = 3;
+v_dopp = Doppler(fixed_phase,dt,lambda0,t_dim);
+figure(7)
+imagesc(v_dopp);
+colormap(jet)
