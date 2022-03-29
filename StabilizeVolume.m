@@ -28,7 +28,7 @@ raw_phase = permute(unwrap(data.phase,[],t_dim), [3 1 2]);
 lower_lim = input('Input least pixel value to keep: ');
 upper_lim = input('Input greatest pixel value to keep: ');
 mag_crop = raw_mag(lower_lim:upper_lim,:,:);
-
+%%
 figure(2)
 imagesc(squeeze(mean(mag_crop,3)))
 [threshold, mask] = SetImageThreshold(squeeze(mean(mag_crop,3)));
@@ -110,9 +110,11 @@ phase_var = var(fixed_phase,0,3);
 figure(6)
 imagesc(squeeze(phase_var))
 caxis([1.75e4 2e4])
+title('Phase variance')
 %% Doppler of fixed image
 t_dim = 3;
 v_dopp = Doppler(fixed_phase,dt,lambda0,t_dim);
 figure(7)
 imagesc(v_dopp);
 colormap(jet)
+title('Doppler')
