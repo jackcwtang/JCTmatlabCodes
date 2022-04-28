@@ -3,7 +3,8 @@
 clc
 clear
 %%
-data = ProcInterferenceBG(1280*2)
+option.background = .99;
+data = ProcessSpectralInterferogram(1280*2)
 %%
 nm2px = 4549.61; % pixel size in axial dimension
 lambda0 = 1679; % 1679 nm for Santec
@@ -12,7 +13,7 @@ t_dim = 2;
 fastscanfreq = 473.7;
 res_freq = 3445;
 res_period = 1/res_freq;
-flyback = res_period/2;
+flyback = res_period*2;
 dt = 1/fastscanfreq + flyback;
 %% Plot the time-averaged data
 time_avg = mean(data.mag,t_dim);
@@ -109,12 +110,14 @@ WriteMultiPageTif('init.tiff', init_crop, 8)
 phase_var = var(fixed_phase,0,3);
 figure(6)
 imagesc(squeeze(phase_var))
-caxis([1.75e4 2e4])
+caxis([2.4e5 2.75e5])
+colormap(jet)
 title('Phase variance')
 %% Doppler of fixed image
 t_dim = 3;
 v_dopp = Doppler(fixed_phase,dt,lambda0,t_dim);
 figure(7)
-imagesc(v_dopp);
+imagesc(v_dopp');
+caxis([1.75 2.5])
 colormap(jet)
 title('Doppler')
