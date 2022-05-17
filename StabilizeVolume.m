@@ -50,14 +50,12 @@ x_start = ceil(size(raw_mag,2)/2)+1;
 init(z_start:(z_start+size(raw_mag,1)-1),x_start:(x_start+size(raw_mag,2)-1),:)= raw_mag(:,:,:);
 
 for i = 1:size(mag_cm,3) % calculate translation offsets and apply
-    
     % Compute the offsets for peak cross correlation
     img = mag_cm(:,:,i);
     c = normxcorr2(ref,img);
     [zpeak,xpeak] = find(c==max(c(:)));
     offsets(i,1) = zpeak-size(mag_cm,1);
     offsets(i,2) = xpeak-size(mag_cm,2);
-    
     % Translate the frame by the computed offsets
 %     z_start = ceil(size(raw_mag,1)/2);
 %     x_start = ceil(size(raw_mag,2)/2);

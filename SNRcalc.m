@@ -8,7 +8,7 @@
 %Add the total attenuation of the ND filter from both passes to the 
 %calculated SNR to get the true SNR.
 
-data = ProcessSpectralInterferogram(1280*2);
+data = ProcessSpectralInterferogram(1000*2);
 %% Auto-find the index of maximum signal
 Mag = squeeze(data.mag);
 figure(); plot(Mag');
@@ -22,7 +22,7 @@ s_median = median(Mag(:,idx_peak));
 s_max = max(Mag(:,idx_peak));
 s_min = min(Mag(:,idx_peak));
  
-noi = std(Mag(:,205:215),0,'all');
+noi = std(Mag(:,242:252),0,'all');
 
 SNR_mean = 20*log10(s_mean/noi)
 SNR_median = 20*log10(s_median/noi)
