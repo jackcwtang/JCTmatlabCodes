@@ -4,7 +4,7 @@ clc
 clear
 %%
 option.background = .99;
-data = ProcessSpectralInterferogram(1280*2)
+data = ProcessSpectralInterferogram(2*1356)
 %%
 nm2px = 4549.61; % pixel size in axial dimension
 lambda0 = 1679; % 1679 nm for Santec
