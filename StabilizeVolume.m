@@ -4,24 +4,20 @@ clc
 clear
 %%
 option.background = .99;
-data = ProcessSpectralInterferogram(2*1356)
-%%
-nm2px = 4549.61; % pixel size in axial dimension
-lambda0 = 1679; % 1679 nm for Santec
-phasepx = 2*pi*nm2px/lambda0;
-t_dim = 2;
-fastscanfreq = 473.7;
-res_freq = 3445;
-res_period = 1/res_freq;
-flyback = res_period*2;
-dt = 1/fastscanfreq + flyback;
+data = ProcessSpectralInterferogram(2*2048)
+
 %% Plot the time-averaged data
-time_avg = mean(data.mag,t_dim);
+t_dim = 2;
+time_avg = squeeze(mean(data.mag,t_dim))';
 figure(1)
-imagesc(transpose(log(squeeze(time_avg(:,:,:)))));
+imagesc(log(time_avg(:,:,:)));
 title('Time-averaged B-scan');
 xlabel('X, pixels');
 ylabel('Z, pixels');
+pbaspect([1 2 1])
+%% Remove fixed pattern noise using median
+
+
 
 %% Crop magnitude for removing fixed pattern noise
 raw_mag = log10(permute(data.mag, [3 1 2])); %Now data is in (y,x,time)
