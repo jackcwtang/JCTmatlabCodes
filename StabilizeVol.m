@@ -1,6 +1,7 @@
 % StabilizeVol.m
 % Jack C. Tang
 % Input volume magnitude data in ZXY format, outputs stabilized ZXY volume
+% Uses normxcorr2 as the stabilization algorithm
 
 function [stabilized,stabilized_phase,mask] = StabilizeVol(vol,phase)
     [threshold, mask] = SetImageThreshold(squeeze(mean(vol,3)));
@@ -24,6 +25,7 @@ function [stabilized,stabilized_phase,mask] = StabilizeVol(vol,phase)
         stabilized(z_start-offset(i,1):z_end-offset(i,1),x_start-offset(i,2):x_end-offset(i,2),i) = vol(:,:,i);
         stabilized_phase(z_start-offset(i,1):z_end-offset(i,1),x_start-offset(i,2):x_end-offset(i,2),i) = phase(:,:,i);
     end
+    
     stabilized = stabilized(z_start:z_end,x_start:x_end,:);
     stabilized_phase = stabilized_phase(z_start:z_end,x_start:x_end,:);
    
