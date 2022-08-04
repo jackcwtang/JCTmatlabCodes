@@ -15,28 +15,29 @@ phase = permute(data.phase,[3 1 2]);
 
 %% Display initial average before denoising and stabilizing
 init_avg = squeeze(mean(mag,3));
+denoised_init = DenoiseVol(init_avg);
 figure(1)
-imagesc((init_avg));
+imagesc((denoised_init));
 title('Raw magnitude average')
-cropped_vol = mag(550:1700,:,:);
-cropped_phase = phase(550:1700,:,:);
+cropped_vol = log(mag(1050:1300,:,:)); %550:1700 for OR
+cropped_phase = phase(1050:1300,:,:); %550:1700 for OR
 aspect = permute(data.ImageDimensions, [3 1 2]);
 %% Denoise using median filter
-denoised = DenoiseVol(mag);
+denoised = DenoiseVol(cropped_vol);
 denoised_avg = squeeze(mean(denoised,3));
 figure(2)
 imagesc(denoised_avg);
 title('Cropped and denoised average')
 %% Stabilize volume
-[stabilized,stabilized_phase,mask] = StabilizeVol(denoised,phase);
+[stabilized,stabilized_phase,mask] = StabilizeVol(denoised,cropped_phase);
 
 %% Average stabilized volume
 stabilized_avg = squeeze(mean(stabilized,3));
 figure(3)
 imagesc((stabilized_avg))
 title('Stabilized average')
-aspect_z = size(stabilized_avg,1)/size(mag,1)*15.0717/1.50;
-pbaspect([10  aspect_z 1]);
+%aspect_z = size(stabilized_avg,1)/size(mag,1)*15.0717/1.50;
+%pbaspect([10  aspect_z 1]);
 
 
 %% Subtract bg from stabilized average
@@ -62,10 +63,10 @@ yticklabels(cellfun(addMMy,num2cell([1 2 3 4 5 6 7 8 9 10]*204.8'),'UniformOutpu
 set(gca,'FontSize',18)
 
 %% Crop x-dimension
-x_range_min = input('X min for cropping: ');
-x_range_max = input('X max for cropping: ');
-z_range_min = input('Z min for cropping: ');
-z_range_max = input('Z max for cropping: ');
+x_range_min = input('X min for cropping: '); %175
+x_range_max = input('X max for cropping: '); %450
+z_range_min = input('Z min for cropping: '); %1000
+z_range_max = input('Z max for cropping: '); %1500
 
 %%
 fixed_cropped = fixed_bg(z_range_min:z_range_max,x_range_min:x_range_max);
@@ -78,7 +79,7 @@ aspect_x = 10*(x_range_max-x_range_min)/660;
 aspect_y = 1;
 
 %% Change aspect ratio and formatting
-n = 1;
+n = 1.5;
 conversion_x = 10/667; % in mm/pixel
 conversion_y = 15.0717/n/2048;
 pbaspect([(x_range_max-x_range_min)/660*size(fixed_bg,2)*conversion_x (z_range_max-z_range_min)/2048*size(fixed_bg,1)*conversion_y 1])
@@ -105,7 +106,12 @@ phase_var = mask.*squeeze(var(stabilized_phase,0,3));
 complex_var = mask.*squeeze(var(complex,0,3));
 %% Plot angio
 figure(5)
-t = tiledlayout(1,3, 'TileSpacing','Compact');
+t = tiledlayout(2,2, 'TileSpacing','Compact');
+nexttile
+imagesc(stabilized_avg);
+title('Stabilized average')
+hold on
+
 nexttile
 imagesc(complex_var);
 colormap(jet)
@@ -130,4 +136,4 @@ imagesc(mag_var)
 colormap(jet)
 title('Magnitude Variance')
 colorbar
-%caxis([0.75E8 3E8])
+caxis([0 .75])
