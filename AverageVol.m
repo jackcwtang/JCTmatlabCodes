@@ -5,11 +5,11 @@
 % Accepts raw data input, outputs denoised and stabilized b-scan average.
 
 %% Load raw data
-option.command = '';
-option.background = 0.99;
-data = ProcessSpectralInterferogram(2*2048,option);
+%option.command = '';
+%option.background = 0.99;
+data = ProcessSpectralInterferogram(2*4096);
 disp(data.DataDirectory)
-mag = permute(data.mag,[3 1 2]);
+mag = permute(data.mag,[3 1 2]); % data is now in ZXY format
 phase = permute(data.phase,[3 1 2]);
 
 
@@ -19,8 +19,10 @@ denoised_init = DenoiseVol(init_avg);
 figure(1)
 imagesc((denoised_init));
 title('Raw magnitude average')
-cropped_vol = log(mag(1050:1300,:,:)); %550:1700 for OR
-cropped_phase = phase(1050:1300,:,:); %550:1700 for OR
+
+%%
+cropped_vol = log(mag(2000:3000,:,:)); %550:1700 for OR
+cropped_phase = phase(2000:3000,:,:); %550:1700 for OR
 aspect = permute(data.ImageDimensions, [3 1 2]);
 %% Denoise using median filter
 denoised = DenoiseVol(cropped_vol);
@@ -32,35 +34,37 @@ title('Cropped and denoised average')
 [stabilized,stabilized_phase,mask] = StabilizeVol(denoised,cropped_phase);
 
 %% Average stabilized volume
-stabilized_avg = squeeze(mean(stabilized,3));
+stabilized_avg = squeeze(median(stabilized,3));
 figure(3)
-imagesc((stabilized_avg))
+imagesc(log10(stabilized_avg))
 title('Stabilized average')
+caxis([-.75 .5])
 %aspect_z = size(stabilized_avg,1)/size(mag,1)*15.0717/1.50;
 %pbaspect([10  aspect_z 1]);
 
 
 %% Subtract bg from stabilized average
 bg = repmat(median(stabilized_avg,2),1,size(stabilized_avg,2));
-fixed_bg = stabilized_avg-bg;
+idxX = 150:450;
+idxZ = 1:1001;
+
+fixed_bg = stabilized_avg(idxZ,idxX)-bg(idxZ,idxX);
 fixed_bg(fixed_bg<0)=0;
 figure(4)
 imagesc((fixed_bg))
 title('Stabilized bg')
 xlabel('X, mm')
 ylabel('Z, mm')
-%%
-n = 1.5;
-conversion_x = 10/667; % in mm/pixel
-conversion_y = 15.0717/n/2048;
-pbaspect([size(fixed_bg,2)*conversion_x size(fixed_bg,1)*conversion_y 1])
+%% Brian's plotting code
+n = 1.0; % refractive index
+X = data.ImageDimensions(1)./double(data.ImageDimensionsPixels(1))*size(fixed_bg,2);
+Z = data.ImageDimensions(3)./double(data.ImageDimensionsPixels(3))*size(fixed_bg,1)/n;
+h=figure(5);imagesc([0, X],[0,Z],(fixed_bg));colormap('jet');
+pbaspect([X/Z 1 1])
+xlabel('X, mm')
+ylabel('Z, mm')
 
-addMMx=@(x) sprintf('%.1f',x*conversion_x);
-addMMy=@(y) sprintf('%.1f',y*conversion_y);
-xticklabels(cellfun(addMMx,num2cell([1 2 3 4 5 6 7 8 9 10]*100'),'UniformOutput',false));
-yticklabels(cellfun(addMMy,num2cell([1 2 3 4 5 6 7 8 9 10]*204.8'),'UniformOutput',false));
-
-set(gca,'FontSize',18)
+%caxis([-2 .75])
 
 %% Crop x-dimension
 x_range_min = input('X min for cropping: '); %175
