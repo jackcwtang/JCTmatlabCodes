@@ -1,5 +1,5 @@
 %SNR calculation
-%Brian Applegate
+%Brian Applegate, Jack Tang
 
 %Calculates the mean, median, and max SNR using single-point MScan data
 

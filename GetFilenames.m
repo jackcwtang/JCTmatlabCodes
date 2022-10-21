@@ -1,4 +1,4 @@
-%% Get data file names
+%% GetFilenames.m
 % Jack Tang
 % 2020 07 04 happy birthday America
 
