@@ -10,7 +10,7 @@
 data = ProcessSpectralInterferogram(2*4096);
 disp(data.DataDirectory)
 mag = permute(data.mag,[3 1 2]); % data is now in ZXY format
-phase = permute(data.phase,[3 1 2]);
+%phase = permute(data.phase,[3 1 2]);
 
 
 %% Display initial average before denoising and stabilizing

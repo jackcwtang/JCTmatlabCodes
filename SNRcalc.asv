@@ -16,13 +16,13 @@ figure(); plot(Mag');
 [Irow, Icol] = ind2sub(size(Mag),I);
 %%
 %idx_peak = Icol;
-idx_peak = 971;
+idx_peak = 2058;
 s_mean = mean(Mag(:,idx_peak));
 s_median = median(Mag(:,idx_peak));
 s_max = max(Mag(:,idx_peak));
 s_min = min(Mag(:,idx_peak));
  
-noi = std(Mag(:,2100:2200),0,'all');
+noi = std(Mag(:,100:875),0,'all');
 
 SNR_mean = 20*log10(s_mean/noi)
 SNR_median = 20*log10(s_median/noi)

@@ -12,7 +12,6 @@ data = data - bkg;
 data(data<0) = 0.1;
 data = medfilt3(data,[5 5 5]);
 
-
 clear bkg
 load('handel.mat')
 sound(y(1:16000),Fs)
@@ -43,14 +42,14 @@ tmp1 = extract(DepthStr{1},pat);
 zdem = str2double([tmp1{1},'.',tmp1{2}]);
 du = [ydem xdem zdem]./size(data);
 pixelsize = min(du,[],'all');
-scale= du/pixelsize; %scale for orthosliceviewer
+scale = du/pixelsize; %scale for orthosliceviewer
 
 clear fid pat tmp1 DepthStr LengthStr WidthStr ScanParamsfile ProcSoptsfile pname du
 
 %%  Display
-os4 = orthosliceViewer(log10(data));
+os4 = orthosliceViewer((data));
 os4.ScaleFactors = scale;
 colormap(jet)
 
 %%
-WriteMultiPageTif('fixed_cochlea.tiff',(data),8)
+WriteMultiPageTif('fixed_cochlea_santec.tiff',(data),16)

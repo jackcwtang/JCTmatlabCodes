@@ -5,8 +5,8 @@ data = double(permute(IntData,[3 1 2]));
 
 clear IntData info
 %% Subtract background and median filter
-cropdata = data(:,150:650,:);
-bkg = median(cropdata,1);
+cropdata = data(:,:,:);
+bkg = repmat(median(cropdata,1),size(cropdata,1),1,1);
 cropdata = cropdata - bkg;
 cropdata(cropdata<0) = 0;
 cropdata = medfilt3(data,[5 5 5]);
@@ -49,18 +49,16 @@ clear fid pat tmp1 DepthStr LengthStr WidthStr ScanParamsfile ProcSoptsfile du
 %%  Average with registered data
 avg_bscan = squeeze(mean(regdata,2))';
 figure(1)
-imagesc(log10(avg_bscan))
+imagesc((avg_bscan))
 colormap(jet)
-clim([3.75 5])
 pbaspect([size(regdata,1),size(regdata,2),1])
 title('Registered')
 
 %% Average with non-registered data
-avg_noreg = squeeze(mean(cropdata,2))';
+avg_noreg = squeeze(mean(cropdata(:,:,551:1050),2))';
 figure(2)
-imagesc(log10(avg_noreg))
+imagesc((avg_noreg))
 colormap(jet)
-clim([3.75 5])
-pbaspect([size(cropdata,1),size(cropdata,2),1]);
+pbaspect([8.5 17.6617*.2441/1.333 1]);
 
 %% median bg sub

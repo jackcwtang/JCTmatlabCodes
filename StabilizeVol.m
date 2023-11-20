@@ -4,10 +4,10 @@
 % Uses normxcorr2 as the stabilization algorithm
 
 function [stabilized] = StabilizeVol(vol)
-%     [threshold, mask] = SetImageThreshold(squeeze(mean(vol,3)));
-%     vol_masked = vol.*mask;
-%     ref = vol_masked(:,:,1);
-    ref = vol(:,:,1);
+    [threshold, mask] = SetImageThreshold(squeeze(mean(vol,3)));
+    vol_masked = vol.*mask;
+    ref = vol_masked(:,:,1);
+   % ref = vol(:,:,1);
     stabilized = zeros(2*size(vol,1),2*size(vol,2),size(vol,3));
     %stabilized_phase = zeros(2*size(vol,1),2*size(vol,2),size(vol,3));
     offset = zeros(size(vol_masked,3),2);
